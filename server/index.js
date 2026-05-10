@@ -9,8 +9,8 @@ import { dbConnection } from "./utils/index.js";
 
 dotenv.config();
 
-// Block startup until DB connection is ready (prevents Mongoose buffering timeouts)
-await dbConnection();
+// Note: dbConnection is now called after app.listen to ensure Railway health checks pass quickly.
+// Mongoose will buffer commands until the connection is established.
 
 
 const PORT = process.env.PORT || 5000;
@@ -60,7 +60,10 @@ app.use(routeNotFound);
 app.use(errorHandler);
 
 if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
-  app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`Server listening on ${PORT}`);
+    dbConnection(); // Initialize DB connection after port is open
+  });
 }
 
 export default app;
