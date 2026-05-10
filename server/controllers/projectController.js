@@ -73,6 +73,14 @@ export const getProjectById = async (req, res) => {
     const { id } = req.params;
     const { userId } = req.user;
 
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid project ID format",
+      });
+    }
+
     const project = await Project.findById(id)
       .populate("admin", "name email title")
       .populate("members", "name email title role")
@@ -123,6 +131,21 @@ export const updateProject = async (req, res) => {
     const { name, description } = req.body;
     const { userId } = req.user;
 
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid project ID format",
+      });
+    }
+
+    if (name && !name.trim()) {
+      return res.status(400).json({
+        status: false,
+        message: "Project name cannot be empty",
+      });
+    }
+
     const project = await Project.findById(id);
 
     if (!project) {
@@ -166,6 +189,14 @@ export const addProjectMember = async (req, res) => {
     const { id } = req.params;
     const { memberId } = req.body;
     const { userId } = req.user;
+
+    // Validate IDs format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/) || !memberId || !memberId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid project or member ID format",
+      });
+    }
 
     const project = await Project.findById(id);
 
@@ -226,6 +257,14 @@ export const removeProjectMember = async (req, res) => {
     const { memberId } = req.body;
     const { userId } = req.user;
 
+    // Validate IDs format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/) || !memberId || !memberId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid project or member ID format",
+      });
+    }
+
     const project = await Project.findById(id);
 
     if (!project) {
@@ -276,6 +315,14 @@ export const deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.user;
+
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid project ID format",
+      });
+    }
 
     const project = await Project.findById(id);
 

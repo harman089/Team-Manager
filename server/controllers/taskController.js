@@ -54,7 +54,22 @@ export const duplicateTask = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid task ID format",
+      });
+    }
+
     const task = await Task.findById(id);
+
+    if (!task) {
+      return res.status(404).json({
+        status: false,
+        message: "Task not found",
+      });
+    }
 
     const newTask = await Task.create({
       title: task.title + " - Duplicate",
@@ -66,7 +81,7 @@ export const duplicateTask = async (req, res) => {
       date: task.date,
     });
 
-    //alert users of the task
+    // Alert users of the task
     let text = "New task has been assigned to you";
     if (task.team.length > 1) {
       text = text + ` and ${task.team.length - 1} others.`;
@@ -84,9 +99,7 @@ export const duplicateTask = async (req, res) => {
       task: newTask._id,
     });
 
-    res
-      .status(200)
-      .json({ status: true, message: "Task duplicated successfully." });
+    res.status(201).json({ status: true, message: "Task duplicated successfully.", task: newTask });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -99,21 +112,43 @@ export const postTaskActivity = async (req, res) => {
     const { userId } = req.user;
     const { type, activity } = req.body;
 
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid task ID format",
+      });
+    }
+
+    if (!type || !activity || !activity.trim()) {
+      return res.status(400).json({
+        status: false,
+        message: "Activity type and description are required",
+      });
+    }
+
     const task = await Task.findById(id);
+
+    if (!task) {
+      return res.status(404).json({
+        status: false,
+        message: "Task not found",
+      });
+    }
 
     const data = {
       type,
-      activity,
+      activity: activity.trim(),
       by: userId,
     };
 
     task.activities.push(data);
-
     await task.save();
 
-    res
-      .status(200)
-      .json({ status: true, message: "Activity posted successfully." });
+    res.status(201).json({
+      status: true,
+      message: "Activity posted successfully.",
+    });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -196,22 +231,37 @@ export const dashboardStatistics = async (req, res) => {
 
 export const getTasks = async (req, res) => {
   try {
-    const { stage, isTrashed } = req.query;
+    const { userId, isAdmin } = req.user;
+    const { stage, isTrashed, search } = req.query;
+
+    if (!userId) {
+      return res.status(401).json({
+        status: false,
+        message: "User authentication required",
+      });
+    }
 
     let query = { isTrashed: isTrashed === "true" };
+
+    // Only admins can see all tasks; others see only their assigned tasks
+    if (!isAdmin) {
+      query.team = userId;
+    }
 
     if (stage) {
       query.stage = stage;
     }
 
-    let queryResult = Task.find(query)
+    if (search) {
+      query.title = { $regex: search, $options: "i" };
+    }
+
+    const tasks = await Task.find(query)
       .populate({
         path: "team",
         select: "name title email",
       })
       .sort({ _id: -1 });
-
-    const tasks = await queryResult;
 
     res.status(200).json({
       status: true,
@@ -226,6 +276,15 @@ export const getTasks = async (req, res) => {
 export const getTask = async (req, res) => {
   try {
     const { id } = req.params;
+    const { userId, isAdmin } = req.user;
+
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid task ID format",
+      });
+    }
 
     const task = await Task.findById(id)
       .populate({
@@ -236,6 +295,22 @@ export const getTask = async (req, res) => {
         path: "activities.by",
         select: "name",
       });
+
+    if (!task) {
+      return res.status(404).json({
+        status: false,
+        message: "Task not found",
+      });
+    }
+
+    // Check permissions: only admins or team members can view
+    const isTeamMember = task.team.some((member) => member._id.toString() === userId);
+    if (!isAdmin && !isTeamMember) {
+      return res.status(403).json({
+        status: false,
+        message: "Not authorized to access this task",
+      });
+    }
 
     res.status(200).json({
       status: true,
@@ -250,24 +325,45 @@ export const getTask = async (req, res) => {
 export const createSubTask = async (req, res) => {
   try {
     const { title, tag, date } = req.body;
-
     const { id } = req.params;
 
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid task ID format",
+      });
+    }
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        status: false,
+        message: "SubTask title is required",
+      });
+    }
+
     const newSubTask = {
-      title,
+      title: title.trim(),
       date,
       tag,
     };
 
     const task = await Task.findById(id);
 
-    task.subTasks.push(newSubTask);
+    if (!task) {
+      return res.status(404).json({
+        status: false,
+        message: "Task not found",
+      });
+    }
 
+    task.subTasks.push(newSubTask);
     await task.save();
 
-    res
-      .status(200)
-      .json({ status: true, message: "SubTask added successfully." });
+    res.status(201).json({
+      status: true,
+      message: "SubTask added successfully.",
+    });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -279,20 +375,43 @@ export const updateTask = async (req, res) => {
     const { id } = req.params;
     const { title, date, team, stage, priority, assets } = req.body;
 
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid task ID format",
+      });
+    }
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        status: false,
+        message: "Task title is required",
+      });
+    }
+
     const task = await Task.findById(id);
 
-    task.title = title;
+    if (!task) {
+      return res.status(404).json({
+        status: false,
+        message: "Task not found",
+      });
+    }
+
+    task.title = title.trim();
     task.date = date;
-    task.priority = priority.toLowerCase();
+    task.priority = priority?.toLowerCase() || task.priority;
     task.assets = assets;
-    task.stage = stage.toLowerCase();
+    task.stage = stage?.toLowerCase() || task.stage;
     task.team = team;
 
     await task.save();
 
-    res
-      .status(200)
-      .json({ status: true, message: "Task updated successfully." });
+    res.status(200).json({
+      status: true,
+      message: "Task updated successfully.",
+    });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -303,15 +422,29 @@ export const trashTask = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Validate ID format
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid task ID format",
+      });
+    }
+
     const task = await Task.findById(id);
 
-    task.isTrashed = true;
+    if (!task) {
+      return res.status(404).json({
+        status: false,
+        message: "Task not found",
+      });
+    }
 
+    task.isTrashed = true;
     await task.save();
 
     res.status(200).json({
       status: true,
-      message: `Task trashed successfully.`,
+      message: "Task trashed successfully.",
     });
   } catch (error) {
     console.log(error);
@@ -324,25 +457,57 @@ export const deleteRestoreTask = async (req, res) => {
     const { id } = req.params;
     const { actionType } = req.query;
 
+    // Validate ID format (for non-bulk actions)
+    if (id && !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid task ID format",
+      });
+    }
+
+    if (!actionType) {
+      return res.status(400).json({
+        status: false,
+        message: "Action type is required (delete, deleteAll, restore, restoreAll)",
+      });
+    }
+
     if (actionType === "delete") {
+      const task = await Task.findById(id);
+      if (!task) {
+        return res.status(404).json({
+          status: false,
+          message: "Task not found",
+        });
+      }
       await Task.findByIdAndDelete(id);
     } else if (actionType === "deleteAll") {
       await Task.deleteMany({ isTrashed: true });
     } else if (actionType === "restore") {
-      const resp = await Task.findById(id);
-
-      resp.isTrashed = false;
-      await resp.save();
+      const task = await Task.findById(id);
+      if (!task) {
+        return res.status(404).json({
+          status: false,
+          message: "Task not found",
+        });
+      }
+      task.isTrashed = false;
+      await task.save();
     } else if (actionType === "restoreAll") {
       await Task.updateMany(
         { isTrashed: true },
         { $set: { isTrashed: false } }
       );
+    } else {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid action type",
+      });
     }
 
     res.status(200).json({
       status: true,
-      message: `Operation performed successfully.`,
+      message: "Operation performed successfully.",
     });
   } catch (error) {
     console.log(error);

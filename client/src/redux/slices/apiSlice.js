@@ -12,10 +12,35 @@ console.log("API_URI:", API_URI);
 const baseQuery = fetchBaseQuery({
   baseUrl: API_URI,
   credentials: "include",
+  prepareHeaders: (headers, { getState }) => {
+    // Ensure credentials are sent with all requests
+    return headers;
+  },
 });
 
+const baseQueryWithErrorHandling = async (args, api, extraOptions) => {
+  let result = await baseQuery(args, api, extraOptions);
+
+  if (result.error) {
+    const status = result.error?.status;
+    const message = result.error?.data?.message || result.error?.error;
+
+    // Log all errors for debugging
+    console.error(`[API Error] ${status}:`, message);
+
+    if (status === 401) {
+      console.error("[AUTH] Unauthorized - Check if token/cookie is set");
+      // Optional: dispatch logout action here
+    } else if (status === 403) {
+      console.error("[AUTH] Forbidden - User doesn't have permission");
+    }
+  }
+
+  return result;
+};
+
 export const apiSlice = createApi({
-  baseQuery,
+  baseQuery: baseQueryWithErrorHandling,
   tagTypes: ["Task", "User", "Notification", "Project"],
   endpoints: (builder) => ({}),
 });

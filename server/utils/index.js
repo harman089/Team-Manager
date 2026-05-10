@@ -21,11 +21,22 @@ export const createJWT = (res, userId) => {
     expiresIn: "1d",
   });
 
-  // Change sameSite from strict to none when you deploy your app
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV !== "development",
-    sameSite: process.env.NODE_ENV !== "development" ? "none" : "strict",
+    secure: isProduction, // HTTPS only in production
+    sameSite: isProduction ? "none" : "strict", // "none" required for cross-origin in production
     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+    path: "/", // Ensure cookie is sent for all paths
   });
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      "[JWT] Token created - sameSite:",
+      isProduction ? "none" : "strict",
+      ", secure:",
+      isProduction
+    );
+  }
 };

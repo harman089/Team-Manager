@@ -48,10 +48,8 @@ export const registerUser = async (req, res) => {
     const user = await User.create(sanitizedData);
 
     if (user) {
-      // Only create JWT for admin registrations
-      if (isAdmin) {
-        createJWT(res, user._id);
-      }
+      // Create JWT for all users (both admin and non-admin)
+      createJWT(res, user._id);
 
       user.password = undefined;
 
@@ -240,23 +238,41 @@ export const markNotificationRead = async (req, res) => {
 export const changeUserPassword = async (req, res) => {
   try {
     const { userId } = req.user;
+    const { password, oldPassword } = req.body;
+
+    // Validate new password
+    if (!password || password.trim().length < 6) {
+      return res.status(400).json({
+        status: false,
+        message: "Password must be at least 6 characters long",
+      });
+    }
 
     const user = await User.findById(userId);
 
-    if (user) {
-      user.password = req.body.password;
-
-      await user.save();
-
-      user.password = undefined;
-
-      res.status(201).json({
-        status: true,
-        message: `Password chnaged successfully.`,
-      });
-    } else {
-      res.status(404).json({ status: false, message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
     }
+
+    // Verify old password if provided
+    if (oldPassword) {
+      const isMatch = await user.matchPassword(oldPassword);
+      if (!isMatch) {
+        return res.status(400).json({
+          status: false,
+          message: "Current password is incorrect",
+        });
+      }
+    }
+
+    user.password = password;
+    await user.save();
+    user.password = undefined;
+
+    res.status(200).json({
+      status: true,
+      message: "Password changed successfully.",
+    });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
