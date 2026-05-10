@@ -1,6 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const API_URI = import.meta.env.VITE_API_URL || "/api";
+let API_URI = import.meta.env.VITE_API_URL || "/api";
+
+// Auto-fix: Ensure the URL ends with /api if it's an absolute URL
+if (API_URI.startsWith("http") && !API_URI.endsWith("/api")) {
+  API_URI = API_URI.endsWith("/") ? `${API_URI}api` : `${API_URI}/api`;
+}
 
 console.log("API_URI:", API_URI);
 
