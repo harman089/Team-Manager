@@ -17,31 +17,12 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:5173",
-  "https://team-task-manager-ubmv.vercel.app",
-  "https://team-task-manager-beta-sepia.vercel.app",
-  process.env.FRONTEND_URL, // Dynamic frontend URL from env
-].filter(Boolean);
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || process.env.NODE_ENV !== "production") {
-        callback(null, true);
-      } else {
-        const isAllowed = allowedOrigins.some(
-          (base) => origin.replace(/\/$/, "") === base?.replace(/\/$/, "")
-        );
-
-        if (isAllowed) {
-          callback(null, true);
-        } else {
-          callback(new Error("Not allowed by CORS"));
-        }
-      }
+      // Allow all origins (reflects the request origin)
+      // This removes the need for FRONTEND_URL in backend env
+      callback(null, true);
     },
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
     credentials: true,
