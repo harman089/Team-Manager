@@ -26,7 +26,8 @@ app.use(
       "https://team-task-manager-ubmv.vercel.app",
       "https://team-task-manager-beta-sepia.vercel.app",
     ],
-    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
+
     credentials: true,
   })
 );
