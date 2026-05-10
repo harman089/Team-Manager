@@ -332,7 +332,7 @@ export const deleteRestoreTask = async (req, res) => {
       const resp = await Task.findById(id);
 
       resp.isTrashed = false;
-      resp.save();
+      await resp.save();
     } else if (actionType === "restoreAll") {
       await Task.updateMany(
         { isTrashed: true },
