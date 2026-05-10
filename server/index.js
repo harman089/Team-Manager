@@ -29,12 +29,18 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== "production") {
+      if (!origin || process.env.NODE_ENV !== "production") {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        const isAllowed = allowedOrigins.some(
+          (base) => origin.replace(/\/$/, "") === base?.replace(/\/$/, "")
+        );
+
+        if (isAllowed) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
       }
     },
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
