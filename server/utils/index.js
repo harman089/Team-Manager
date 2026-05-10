@@ -2,14 +2,20 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 export const dbConnection = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI is not set");
+  }
 
+  try {
+    await mongoose.connect(mongoUri);
     console.log("DB connection established");
   } catch (error) {
     console.log("DB Error: " + error);
+    throw error;
   }
 };
+
 
 export const createJWT = (res, userId) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {

@@ -9,7 +9,9 @@ import { dbConnection } from "./utils/index.js";
 
 dotenv.config();
 
-dbConnection();
+// Block startup until DB connection is ready (prevents Mongoose buffering timeouts)
+await dbConnection();
+
 
 const PORT = process.env.PORT || 5000;
 
