@@ -29,6 +29,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(morgan("dev"));
+
+// Health check for deployed backends that may receive GET /
+app.get("/", (req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 app.use("/api", routes);
 
 app.use(routeNotFound);
