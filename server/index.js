@@ -21,6 +21,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "https://web-production-1044e.up.railway.app",
+  "https://team-manager-cyan-five.vercel.app",
 ];
 
 app.use(
