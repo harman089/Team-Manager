@@ -25,6 +25,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${AUTH_URL}/register`,
         method: "POST",
         body: data,
+        credentials: "include",
       }),
       invalidatesTags: ["User"],
     }),

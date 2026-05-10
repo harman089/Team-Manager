@@ -19,11 +19,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow all origins (reflects the request origin)
-      // This removes the need for FRONTEND_URL in backend env
-      callback(null, true);
-    },
+    origin: true, // Reflects the request origin automatically
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
     credentials: true,
   })
