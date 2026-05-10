@@ -1,0 +1,26 @@
+{
+  "name": "taskmanager",
+  "version": "1.0.0",
+  "description": "Cloud-Based Task Manager - MERN Full Stack Application",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "build": "npm --prefix server install && npm --prefix client install && npm --prefix client run build",
+    "start": "npm --prefix server start",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev"
+  },
+  "keywords": [
+    "task-management",
+    "team-collaboration",
+    "mern",
+    "react",
+    "node",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
