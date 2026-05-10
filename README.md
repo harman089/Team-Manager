@@ -142,8 +142,8 @@ npm run dev
 npm run build
 ```
 
-### 4. Access Application
-- Frontend: http://localhost:5173
+### . Access Application
+- Frontend: http://localhost:3000
 - Backend: http://localhost:5000
 - API: http://localhost:5000/api
 
@@ -166,99 +166,6 @@ npm run build
 │   (Database)    │
 └─────────────────┘
 ```
-
-### Prerequisites for Deployment
-- Railway.app account (free tier available)
-- GitHub repository
-- MongoDB Atlas account (free tier available)
-- Custom domain (optional)
-
-### Step 1: Set Up MongoDB Atlas
-
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create free account
-3. Create cluster (M0 free tier)
-4. Whitelist IP: 0.0.0.0/0 (or your Railway IPs)
-5. Create database user with password
-6. Get connection string: `mongodb+srv://user:password@cluster.mongodb.net/taskmanager?retryWrites=true&w=majority`
-
-### Step 2: Deploy Backend
-
-1. **Connect Repository**
-   - Go to [Railway.app](https://railway.app)
-   - Click "Create" → "Deploy from GitHub"
-   - Select your repository
-
-2. **Configure Settings**
-   - Set Root Directory: `server` (if monorepo)
-   - Start Command: `npm start`
-   - Build Command: `npm install`
-
-3. **Set Environment Variables**
-   - Go to Variables tab
-   - Add these variables:
-   ```
-   PORT=5000
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/taskmanager
-   JWT_SECRET=your-super-secret-key-here-generate-random
-   NODE_ENV=production
-   ```
-
-4. **Generate Domain**
-   - Railway auto-generates a public URL
-   - Copy the URL (e.g., https://taskmanager-api.railway.app)
-
-### Step 3: Deploy Frontend
-
-1. **Create New Railway Project**
-   - Click "Create" → "Deploy from GitHub"
-   - Select your repository
-
-2. **Configure Settings**
-   - Root Directory: `client`
-   - Build Command: `npm install && npm run build`
-   - Start Command: `npm run preview`
-
-3. **Set Environment Variables**
-   ```
-   VITE_API_URL=https://taskmanager-api.railway.app/api
-   ```
-
-4. **Update Backend CORS**
-   - Go to backend Railway deployment settings
-   - Update `VITE_CLIENT_URL` in environment
-   - Or update `server/index.js` CORS config:
-   ```javascript
-   app.use(cors({
-     origin: [
-       "http://localhost:3000",
-       "http://localhost:5173",
-       "https://your-frontend-railway-url.railway.app"
-     ],
-     credentials: true,
-   }));
-   ```
-
-### Step 4: Deploy Both Apps Together (Alternative)
-
-If using monorepo, you can deploy both from single Railway project:
-
-1. Create custom Procfile:
-```
-web: cd server && npm start
-release: cd client && npm run build
-```
-
-2. Set Root Directory to repository root
-
-3. Configure environment variables for both apps
-
-### Step 5: Custom Domain (Optional)
-
-1. In Railway project → Settings
-2. Add custom domain
-3. Update DNS records at your domain provider
-4. Point to Railway URL
 
 ## 📊 Database Schema
 
@@ -358,28 +265,6 @@ PUT    /api/user/change-password   - Change password
 PUT    /api/user/read-noti         - Mark notification read
 ```
 
-## 📝 Environment Variables
-
-### Server (.env)
-```properties
-# Server Configuration
-PORT=5000
-NODE_ENV=production
-
-# Database
-MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/taskmanager
-
-# Authentication
-JWT_SECRET=your-super-secret-jwt-key-here-make-it-strong
-JWT_EXPIRE=1d
-```
-
-### Client (.env)
-```properties
-# API Configuration
-VITE_API_URL=https://your-api-url.railway.app/api
-```
-
 ## 👥 User Roles
 
 ### Admin
@@ -428,41 +313,7 @@ VITE_API_URL=https://your-api-url.railway.app/api
 3. View activity logs
 4. Monitor overdue tasks
 
-## 🐛 Troubleshooting
 
-### MongoDB Connection Issues
-```
-Error: connect ECONNREFUSED
-- Check MongoDB Atlas connection string
-- Verify IP whitelist (0.0.0.0/0 for Railway)
-- Ensure credentials are correct
-- Test connection with MongoDB Compass
-```
-
-### CORS Errors
-```
-Error: Access to XMLHttpRequest blocked by CORS policy
-- Add frontend URL to CORS whitelist in server/index.js
-- Verify VITE_API_URL in client .env matches backend URL
-- Check credentials: true in API calls
-```
-
-### Authentication Issues
-```
-JWT token expired or invalid
-- Clear browser cookies
-- Verify JWT_SECRET is same on server
-- Check token expiration settings
-- Re-login user
-```
-
-### Build Errors
-```
-npm ERR! code ERESOLVE
-- Delete node_modules and package-lock.json
-- Run: npm install --legacy-peer-deps
-- Or: npm cache clean --force && npm install
-```
 
 ## 📱 Responsive Design
 
@@ -510,34 +361,6 @@ taskmanager/
 └── .gitignore
 ```
 
-## 📞 Support & Documentation
-
-- **Issues**: Create issue in GitHub repository
-- **Discussions**: Use GitHub Discussions
-- **Wiki**: Check repository wiki for detailed guides
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Create feature branch: `git checkout -b feature/new-feature`
-3. Commit changes: `git commit -m 'Add new feature'`
-4. Push branch: `git push origin feature/new-feature`
-5. Open Pull Request
-
-## 📄 License
-
-This project is licensed under the ISC License - see LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- MongoDB Atlas for cloud database
-- Railway for deployment platform
-- React and Node.js communities
-- All contributors and testers
-
----
-
-**Ready to deploy? Follow the Railway deployment guide above and go live! 🚀**
 
 
 ## **General Features:**
@@ -593,58 +416,4 @@ First, create the environment variables file `.env` in the server folder. The `.
 
 &nbsp;
 
-## Set Up MongoDB:
 
-1. Setting up MongoDB involves a few steps:
-    - Visit MongoDB Atlas Website
-        - Go to the MongoDB Atlas website: [https://www.mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas).
-
-    - Create an Account
-    - Log in to your MongoDB Atlas account.
-    - Create a New Cluster
-    - Choose a Cloud Provider and Region
-    - Configure Cluster Settings
-    - Create Cluster
-    - Wait for Cluster to Deploy
-    - Create Database User
-    - Set Up IP Whitelist
-    - Connect to Cluster
-    - Configure Your Application
-    - Test the Connection
-
-2. Create a new database and configure the `.env` file with the MongoDB connection URL. 
-
-## Steps to run server
-
-1. Open the project in any editor of choice.
-2. Navigate into the server directory `cd server`.
-3. Run `npm i` or `npm install` to install the packages.
-4. Run `npm start` to start the server.
-
-If configured correctly, you should see a message indicating that the server is running successfully and `Database Connected`.
-
-&nbsp;
-
-# Client Side Setup
-
-## Environment variables
-First, create the environment variables file `.env` in the client folder. The `.env` file contains the following environment variables:
-
-- VITE_APP_BASE_URL = `http://localhost:8800` #Note: Change the port 8800 to your port number.
-- VITE_APP_FIREBASE_API_KEY = `Firebase api key`
-
-## Steps to run client
-
-1. Navigate into the client directory `cd client`.
-2. Run `npm i` or `npm install` to install the packages.
-3. Run `npm start` to run the app on `http://localhost:3000`.
-4. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-
-
-&nbsp;
-
-## For Support, Contact:
-
-- Email: codewavewithasante@gmail.com
-- Telegram Chat: [https://t.me/Codewave_with_asante](https://t.me/Codewave_with_asante)
