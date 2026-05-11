@@ -29,6 +29,7 @@ export const createJWT = (res, userId) => {
     sameSite: isProduction ? "none" : "strict", // "none" required for cross-origin in production
     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     path: "/", // Ensure cookie is sent for all paths
+    domain: isProduction ? undefined : "localhost", // Allow cross-origin in production, restrict locally
   });
 
   if (process.env.NODE_ENV !== "production") {
