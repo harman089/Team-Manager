@@ -1,13 +1,14 @@
 {
   "version": 2,
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/dist",
+  "env": {
+    "VITE_API_URL": "@vite_api_url"
+  },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/server/index.js"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/client/dist/index.html"
+      "destination": "/index.html"
     }
   ]
 }
