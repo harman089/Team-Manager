@@ -77,11 +77,14 @@ const Projects = () => {
                     title={member.name}
                   >
                     {member.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)}
+                      ? member.name
+                          .split(" ")
+                          .filter((n) => n && n.length > 0)
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 2)
+                      : ""}
                   </div>
                 ))}
                 {project.members?.length > 3 && (
